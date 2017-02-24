@@ -93,6 +93,7 @@ func (s *Spinner) Start() {
 		return
 	}
 	s.active = true
+	fmt.Print("\033[?25l")
 
 	go func() {
 		for {
@@ -120,11 +121,16 @@ func (s *Spinner) Start() {
 // Stop stops the indicator
 func (s *Spinner) Stop() {
 	s.lock.Lock()
-	defer s.lock.Unlock()
+	defer func () {
+		s.lock.Unlock()
+	}()
+
 	if s.active {
 		s.active = false
+		fmt.Print("\033[?25h")
 		s.erase()
 		if s.FinalMSG != "" {
+			//fmt.Fprint(s.Writer, "033[?25h")
 			fmt.Fprintf(s.Writer, s.FinalMSG)
 		}
 		s.stopChan <- struct{}{}
